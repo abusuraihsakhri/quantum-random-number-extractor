@@ -15,7 +15,7 @@ def create_app():
 
         app = FastAPI(
             title="QRNG-Entropy: NIST SP 800-90B Physical Entropy Source & Min-Entropy Estimator",
-            description="Processes raw quantum/hardware entropy streams, evaluating Markov tests, Compression tests, Multi-Most-Common-Value estimates, and cryptographic whitening.",
+            description="Legacy generic threshold auditing endpoint. The separate bitstream extractor does not certify physical entropy or NIST SP 800-90B conformance.",
             version="2.0.0-FRONTIER",
         )
 
