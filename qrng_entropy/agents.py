@@ -93,7 +93,7 @@ class QRNGEntropyCoordinator:
             "critical_count": crit_count,
             "warning_count": warn_count,
             "alerts": [a.to_dict() for a in all_alerts],
-            "standard_specification": "NIST SP 800-90B / 90C Entropy Assessment",
+            "standard_specification": "Illustrative threshold heuristics; not a NIST SP 800-90B assessment",
             "consensus_summary": f"Consensus evaluation completed across 3 sub-agents with status [{status.value}].",
         }
 
