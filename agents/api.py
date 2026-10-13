@@ -1,10 +1,10 @@
 """
 FastAPI REST API Server for Quantum Random Number Extractor.
 """
-from typing import Dict, Any, List
-from fastapi import FastAPI, HTTPException
+from typing import Dict, Any, List\nfrom pathlib import Path
+from fastapi import FastAPI, HTTPException\nfrom fastapi.responses import FileResponse
 from pydantic import BaseModel
-from .base import AuditLogger, PHIGuard
+from .base import AuditLogger, PHIGuard\nfrom qrng_entropy.extractor import extract_bits
 from .models import SystemTaskPayload, ConsensusDossier
 from .supervisor import SystemSupervisor
 
@@ -15,6 +15,31 @@ app = FastAPI(
     description="Enterprise Distributed Component Platform (Post-Quantum Cryptography & Hardware Security)",
     version="3.0.0-ENTERPRISE",
 )
+
+
+class ExtractRequest(BaseModel):
+    bits: str
+
+
+WEB_DIR = Path(__file__).resolve().parent.parent / "web"
+
+
+@app.get("/", include_in_schema=False)
+def web_home():
+    return FileResponse(WEB_DIR / "index.html")
+
+
+@app.get("/extractor.js", include_in_schema=False)
+def web_script():
+    return FileResponse(WEB_DIR / "extractor.js")
+
+
+@app.post("/api/extract")
+def api_extract(payload: ExtractRequest):
+    try:
+        return extract_bits(payload.bits)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
 class ChatRequest(BaseModel):
