@@ -1,170 +1,82 @@
 # Quantum Random Number Extractor
 
-> **Domain:** Post-Quantum Cryptography & Zero-Knowledge Architecture
-> **Reference Guidelines & Standards:** `NIST FIPS 203/204/205, NIST SP 800-90B & ISO/IEC Standards`
+### [Open the Live Application →](https://abusuraihsakhri.github.io/quantum-random-number-extractor/)
 
-<div align="center">
+A local-first workbench for **binary measurement streams**. It demonstrates the classical **von Neumann extractor** and reports elementary input/output bias statistics. It also retains the repository's earlier generic threshold-audit and batch-processing features.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-3776AB.svg?logo=python&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.111-009688.svg?logo=fastapi&logoColor=white)
-![Audit Trail](https://img.shields.io/badge/Audit-HMAC--SHA256_Tamper--Evident-brightgreen.svg)
-![Zero-PHI Guard](https://img.shields.io/badge/Guard-Zero--PHI_Outbound-blue.svg)
-![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg?logo=docker&logoColor=white)
+## Browser workbench
 
-</div>
+Paste a string of binary outcomes, or import a plain-text file containing 0 and 1 symbols separated by whitespace, commas, semicolons, or vertical bars. Select **Extract bits** to see the output, input/output bit frequencies, discarded pairs, and descriptive empirical min-entropy values. Export the extracted bits as a text file.
 
----
+You can generate a **synthetic biased Bernoulli stream** to explore the extractor. This is not a physical or quantum entropy source. Uploads, calculation and exports run **entirely inside the browser tab**; the GitHub Pages application does not send observations to a server. A modern JavaScript-enabled browser is sufficient; the optional simulation additionally needs Web Crypto.
 
-## 📖 What It Does
+### Extraction rule
 
-**Quantum Random Number Extractor** is an advanced analytical and computational platform implementing NIST SP 800-90B physical quantum entropy source & min-entropy estimation. It provides a multi-agent evaluation pipeline that processes task payloads through specialized workers to generate consensus dossiers with cryptographic audit trails.
+| Input pair | Output |
+| --- | --- |
+| `01` | `0` |
+| `10` | `1` |
+| `00`, `11` | Discard |
 
----
+Nonoverlapping pairs are processed left-to-right. An odd final input bit is unused. For example, `01 10 00 11 01` produces `010`.
 
-## ⚙️ Key Capabilities & Algorithmic Modules
+**Scientific limitation:** This rule removes fixed bias for independent, identically distributed Bernoulli trials. It does not remove arbitrary correlations, verify source provenance, certify cryptographic unpredictability or implement a full **NIST SP 800-90B** entropy-source assessment. The displayed min-entropy statistic `-log2(max(p(0), p(1)))` is a *plug-in descriptive estimate*, not a statistically conservative entropy lower bound. **Do not use experimental output for production key generation.**
 
-- **Multi-Agent Evaluation Pipeline**: Three specialized workers (InvariantQC, SafetyEscalation, ProtocolConformance) analyze task payloads
-- **Deterministic Calculation Engine**: Strict compliance with standard reference formulations and thresholds
-- **Risk & Urgency Classification**: Multi-tier categorization (ROUTINE, ELEVATED, CRITICAL_STAT) with automated action recommendations
-- **Validation & Guardrails**: Rigorous input bounds checking and anomaly detection
-- **HMAC-SHA256 Audit Trail**: Cryptographically chained, tamper-evident logging
-- **Zero-PHI Outbound Interceptor**: Active regex inspection blocking SSNs, MRNs, phone numbers, and patient identifiers
+## Python installation and CLI
 
----
-
-## 💻 Installation
+Python 3.9 or newer is required. From a clone of this repository:
 
 ```bash
-# Core functionality
-pip install .
-
-# With web API support
-pip install ".[web]"
-
-# With development dependencies
-pip install ".[dev]"
+python -m pip install .
+# Extract from a UTF-8 text file; saves plain 0/1 output
+quantum-random-number-extractor extract -i observations.txt -o extracted-bits.txt
+# Output to the terminal instead:
+python -m qrng_entropy.cli extract -i observations.txt
 ```
 
----
+Inputs must contain at least two observations, with a maximum of 1,000,000 bits (4 MiB text-file limit). Invalid symbols are rejected rather than silently removed. The core extractor requires only Python's standard library.
 
-## 💻 CLI Quickstart & Usage
+The **legacy task-audit CLI** remains available:
 
-### 1. Single Task Evaluation
 ```bash
-python cli.py audit --task-id TASK-001 --target KEY-01 --primary 28.5 --secondary 14.2 --critical --status DISCORDANT
-```
-
-### 2. Batch Processing
-```bash
+python cli.py audit --task-id TASK-001 --target KEY-01 --primary 28.5 --secondary 14.2
 python cli.py batch -i sample.csv -o results.csv
-```
-
-### 3. Verify Audit Trail Integrity
-```bash
 python cli.py verify-audit
-```
-
-### 4. Chat Query
-```bash
 python cli.py chat "What is the system status?"
 ```
 
-### 5. Start API Server
+The legacy `audit` and `batch` commands classify generic metrics using fixed heuristic thresholds; they **do not calculate quantum entropy or demonstrate NIST conformance**. The `enrichment.py` features are similarly illustrative threshold checks.
+
+## Optional local API
+
 ```bash
+python -m pip install ".[web]"
 python cli.py serve --host 127.0.0.1 --port 8000
 ```
 
-### Parameter Reference
-| Parameter | Description | Default |
-|:----------|:------------|:--------|
-| `--task-id` | Unique task identifier | TASK-2026-001 |
-| `--target` | Target identifier | KEY-TARGET-01 |
-| `--primary` | Primary metric (float) | 28.5 |
-| `--secondary` | Secondary metric (float) | 14.2 |
-| `--critical` | Flag critical status | False |
-| `--status` | Status descriptor | DISCORDANT |
-| `-i, --input` | Input CSV file (batch) | required |
-| `-o, --output` | Output CSV file (batch) | results.csv |
+Open [http://127.0.0.1:8000/](http://127.0.0.1:8000/) to use the same browser workbench. The API also exposes:
 
----
+- `POST /api/extract` — JSON payload `{"bits":"0110001101"}`; returns extraction results
+- `POST /api/audit`, `POST /api/chat`, `GET /api/audit/logs`, `GET /metrics`, `GET /health` — preserved legacy task-audit operations
+- `/docs` — interactive FastAPI API reference
 
-## 🛡️ Security & Enterprise Architecture
+Use the API only on a trusted network unless you add authentication and deployment-specific access controls. Submitting to an API does transmit that data to its host; the standalone GitHub Pages workbench **does not use the API**.
 
-* **Zero-PHI Outbound Interceptor:** Active regex inspection blocking SSNs, MRNs, phone numbers, and patient identifiers.
-* **Tamper-Evident HMAC-SHA256 Audit Trail:** Chained, cryptographically signed logs for every evaluation and state transition. Set `AUDIT_SECRET_KEY` environment variable for persistent keys across restarts.
-* **Air-Gapped LLM Reasoning Adapter:** Agnostic integration for local Ollama instances (`llama3`, `mistral`), Claude 3.5 Sonnet, GPT-4o, and deterministic test mocks.
-* **Active Learning Bayesian Calibration:** Dynamic tracker updating worker reliability weights and monitoring Brier calibration drift.
-* **FastAPI & Prometheus Telemetry:** Exposes OpenAPI 3.1 REST endpoints and operational Prometheus metrics (`/metrics`).
+## Audit trail and security scope
 
----
+The legacy task supervisor signs in-memory log entries with HMAC-SHA256 and verifies both record signatures and chain continuity. Configure a unique `AUDIT_SECRET_KEY` through the deployment environment; without it, a random ephemeral key is generated. Logs are **not persisted or externally anchored** and cannot detect removal of a final log suffix across process restarts. The repository includes regex-based identifier screening, but this is **not a complete PHI de-identification or compliance system**. Do not submit sensitive records to the public application or unauthenticated API endpoints.
 
-## 🧪 Testing & Verification
-
-Run the automated test suite:
+## Development and checks
 
 ```bash
-pytest -v
+python -m pip install ".[web,dev]"
+python -m pytest -q
+node --test tests/web.test.cjs
+python -m compileall -q agents qrng_entropy
 ```
 
-Execute high-throughput batch simulation benchmarks:
+The static site is served from `web/` by GitHub Pages Actions, with no backend and no Pyodide dependency. The Python service is optional. CI runs Python tests on several Python versions and JavaScript extractor tests with Node.js.
 
-```bash
-python simulator.py 100
-```
+## License
 
-Run batch CLI with sample data:
-
-```bash
-python cli.py batch -i sample.csv -o results.csv
-```
-
----
-
-## 🐳 Container Deployment
-
-```bash
-docker build -t quantum-random-number-extractor .
-docker run -p 8000:8000 -e AUDIT_SECRET_KEY=your-secret-key quantum-random-number-extractor
-```
-
-Or using Docker Compose:
-
-```bash
-docker-compose up -d
-```
-
----
-
-## 📁 Project Structure
-
-```
-quantum-random-number-extractor/
-├── agents/                  # Core agent modules (supervisor, workers, LLM, metrics)
-│   ├── api.py              # FastAPI REST endpoints
-│   ├── base.py             # Security guards, PHI protection, audit trail
-│   ├── models.py           # Pydantic data models with validation
-│   ├── supervisor.py       # Master orchestrator
-│   ├── workers.py          # Specialized evaluation workers
-│   └── ...
-├── qrng_entropy/           # QRNG entropy estimation sub-package
-│   ├── agents.py           # Entropy-specific agents (SP800-90B, Markov, HMAC-DRBG)
-│   ├── engine.py           # Core algorithmic engine
-│   ├── cli.py              # QRNG-specific CLI
-│   └── server.py           # FastAPI server factory
-├── tests/                  # Test suite
-├── cli.py                  # Main CLI entry point
-├── simulator.py            # Batch simulation tool
-├── enrichment.py           # Enrichment feature engines
-├── web/index.html          # Operations console UI
-├── Dockerfile
-└── docker-compose.yml
-```
-
----
-
-## 🔒 Security Notes
-
-- **Audit Key**: Set `AUDIT_SECRET_KEY` environment variable in production. Without it, an ephemeral key is generated (with a warning) and audit integrity is not preserved across restarts.
-- **Input Validation**: All metric values are validated to be finite (no NaN/Inf). Identifier fields must be non-empty.
-- **PHI Protection**: All outbound data is inspected for PHI patterns (SSN, MRN, phone, email, patient names).
+[MIT](LICENSE).
