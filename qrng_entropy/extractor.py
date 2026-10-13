@@ -3,7 +3,6 @@
 Von Neumann extraction assumes independent, identically distributed input bits.
 It does not establish that a source is quantum, unpredictable, or SP 800-90B compliant.
 """
-from collections import Counter
 import math
 import re
 
