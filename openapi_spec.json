@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Quantum Random Number Extractor API",
-    "description": "Enterprise Distributed Component Platform (Clinical & Cryptographic AI) adhering to CAP / CLSI / NIST Standards.",
+    "description": "Local bitstream extraction plus legacy heuristic metric-audit endpoints. No quantum source or standards certification is provided.",
     "version": "3.0.0-ENTERPRISE",
     "contact": {
       "name": "Dr. Abu Suraih Sakhri",
@@ -22,7 +22,7 @@
     },
     "/metrics": {
       "get": {
-        "summary": "Prometheus operational metrics",
+        "summary": "Return legacy in-memory JSON counters",
         "responses": {
           "200": {
             "description": "Prometheus text metrics"
@@ -32,7 +32,7 @@
     },
     "/api/audit": {
       "post": {
-        "summary": "Dispatch task payload across specialized workers",
+        "summary": "Apply legacy heuristic thresholds to numeric task metrics",
         "requestBody": {
           "content": {
             "application/json": {
@@ -76,7 +76,7 @@
     },
     "/api/chat": {
       "post": {
-        "summary": "Air-gapped supervisory conversational assistant",
+        "summary": "Return local deterministic mock status response",
         "requestBody": {
           "content": {
             "application/json": {
@@ -103,10 +103,43 @@
     },
     "/api/audit/logs": {
       "get": {
-        "summary": "Retrieve and cryptographically verify HMAC audit trail",
+        "summary": "Return in-memory HMAC chain and integrity result",
         "responses": {
           "200": {
             "description": "Cryptographic audit trail"
+          }
+        }
+      }
+    },
+    "/api/extract": {
+      "post": {
+        "summary": "Apply von Neumann extraction to a supplied binary measurement stream",
+        "description": "Accepts binary observation text. This is a bias demonstration, not a NIST SP 800-90B entropy assessment.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "bits": {
+                    "type": "string",
+                    "description": "0/1 symbols separated by whitespace, commas, semicolons or pipes"
+                  }
+                },
+                "required": [
+                  "bits"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Extraction bits and descriptive input/output statistics"
+          },
+          "422": {
+            "description": "Invalid bitstream"
           }
         }
       }

@@ -93,7 +93,7 @@ class QRNGEntropyCoordinator:
             "critical_count": crit_count,
             "warning_count": warn_count,
             "alerts": [a.to_dict() for a in all_alerts],
-            "standard_specification": "NIST SP 800-90B / 90C Entropy Assessment",
+            "standard_specification": "Illustrative threshold heuristics; not a NIST SP 800-90B assessment",
             "consensus_summary": f"Consensus evaluation completed across 3 sub-agents with status [{status.value}].",
         }
 
@@ -105,6 +105,6 @@ class QRNGEntropyCoordinator:
         if "status" in q or "ledger" in q:
             return f"QRNG-Entropy: NIST SP 800-90B Physical Entropy Source & Min-Entropy Estimator currently managing {len(self.execution_ledger)} execution tasks in air-gapped memory."
         elif "standard" in q or "spec" in q:
-            return "Active runtime operating strictly according to NIST SP 800-90B / 90C Entropy Assessment specifications."
+            return "This legacy threshold classifier is illustrative; it does not implement NIST SP 800-90B entropy-source assessment."
         else:
-            return f"QRNG-Entropy: NIST SP 800-90B Physical Entropy Source & Min-Entropy Estimator executive coordinator online. Zero-telemetry on-premises surveillance active."
+            return "Legacy threshold-based task classifier available. For recorded-bit extraction, use the extract CLI or browser workbench."

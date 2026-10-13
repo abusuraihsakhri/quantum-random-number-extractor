@@ -161,3 +161,21 @@ class TestAuditIntegrity:
             trail.log("test", "tier1", "EVENT", {"index": i})
         assert trail.verify_integrity() is True
         assert len(trail.get_trail()) == 5
+
+    def test_tampered_entry_signature_is_rejected(self):
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            trail = AuditTrail(secret_key="unit-test-secret")
+        trail.log("agent", "supervisor", "DONE", {"ok": True})
+        assert trail.verify_integrity() is True
+        external = trail.get_trail()
+        external[0]["actor"] = "tampered"
+        assert trail.verify_integrity() is True  # defensive copy
+        trail.logs[0]["actor"] = "tampered"
+        assert trail.verify_integrity() is False
+
+    def test_removed_or_modified_hash_is_rejected(self):
+        trail = AuditTrail(secret_key="unit-test-secret")
+        trail.log("agent", "supervisor", "DONE", {"ok": True})
+        trail.logs[0]["current_hash"] = "0" * 64
+        assert trail.verify_integrity() is False
