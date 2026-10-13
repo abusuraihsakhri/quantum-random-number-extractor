@@ -34,3 +34,6 @@ Repository = "https://github.com/abusuraihsakhri/quantum-random-number-extractor
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.setuptools.packages.find]
+include = ["agents*", "qrng_entropy*"]
