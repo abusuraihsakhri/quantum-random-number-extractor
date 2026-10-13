@@ -102,7 +102,7 @@ def main(argv=None):
         trail = AuditLogger.get_trail()
         valid = AuditLogger.verify_integrity()
         print(f"Audit Trail Blocks: {len(trail)} | Cryptographic Integrity Verified: {valid}")
-        return 0
+        return 0 if valid else 1
 
     if args.command == "batch":
         try:
@@ -117,7 +117,7 @@ def main(argv=None):
             print(f"Error: Permission denied reading '{args.input}'.", file=sys.stderr)
             return 1
 
-        out_fields = fieldnames + ["overall_urgency", "integrity_status", "total_alerts", "audit_hash"]
+        out_fields = list(dict.fromkeys(fieldnames + ["overall_urgency", "integrity_status", "total_alerts", "audit_hash"]))
         out_rows = []
         errors = []
         for idx, r in enumerate(rows):
@@ -140,22 +140,21 @@ def main(argv=None):
             except (ValueError, TypeError) as e:
                 errors.append(f"Row {idx+1}: {e}")
 
-        if out_rows:
-            try:
-                with open(args.output, mode="w", encoding="utf-8", newline="") as f:
-                    writer = csv.DictWriter(f, fieldnames=out_fields)
-                    writer.writeheader()
-                    writer.writerows(out_rows)
-            except PermissionError:
-                print(f"Error: Permission denied writing '{args.output}'.", file=sys.stderr)
-                return 1
+        try:
+            with open(args.output, mode="w", encoding="utf-8", newline="") as f:
+                writer = csv.DictWriter(f, fieldnames=out_fields)
+                writer.writeheader()
+                writer.writerows(out_rows)
+        except OSError as exc:
+            print(f"Error: Cannot write output: {exc}", file=sys.stderr)
+            return 1
 
         print(f"Processed {len(out_rows)} records -> {args.output}")
         if errors:
             print(f"Warnings ({len(errors)} rows skipped):")
             for err in errors:
                 print(f"  - {err}")
-        return 0
+        return 1 if errors else 0
 
     if args.command == "serve":
         import uvicorn
