@@ -36,4 +36,7 @@ Repository = "https://github.com/abusuraihsakhri/quantum-random-number-extractor
 testpaths = ["tests"]
 
 [tool.setuptools.packages.find]
-include = ["agents*", "qrng_entropy*"]
+include = ["agents*", "qrng_entropy*", "web*"]
+
+[tool.setuptools.package-data]
+web = ["*.html", "*.js"]
