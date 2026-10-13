@@ -22,6 +22,10 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install declared dependencies
         run: python -m pip install ".[web,dev]"
+      - name: Verify installed package includes web assets
+        run: |
+          cd /tmp
+          python -c "from agents.api import WEB_DIR; assert (WEB_DIR / 'index.html').is_file() and (WEB_DIR / 'extractor.js').is_file()"
       - name: Python tests
         run: python -m pytest -q
       - name: Compile Python source
