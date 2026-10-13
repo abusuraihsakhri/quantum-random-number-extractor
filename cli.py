@@ -55,7 +55,7 @@ def main(argv=None):
                 raise ValueError("Input file exceeds the supported 4 MB limit")
             result = extract_bits(source.read_text(encoding="utf-8-sig"))
             if args.output:
-                Path(args.output).write_text(result["output_bits"] + "\\n", encoding="utf-8")
+                Path(args.output).write_text(result["output_bits"] + "\n", encoding="utf-8")
             else:
                 print(result["output_bits"])
             print(
