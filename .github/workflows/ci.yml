@@ -1,40 +1,39 @@
-name: Quantum Random Number Extractor CI/CD & Security Verification
+name: CI and security checks
 
 on:
   push:
-    branches: [ master, main ]
+    branches: [master, main]
   pull_request:
-    branches: [ master, main ]
+    branches: [master, main]
+
+permissions:
+  contents: read
 
 jobs:
-  test-and-audit:
+  test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.10", "3.11", "3.12"]
-
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
     steps:
-    - uses: actions/checkout@v4
-
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ matrix.python-version }}
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install fastapi uvicorn pydantic pytest
-
-    - name: Run Pytest Suite
-      run: |
-        pytest -v
-
-    - name: Security SAST & Zero-PHI Audit
-      run: |
-        python -c "
-        from agents.base import PHIGuard, AuditLogger
-        import pytest
-        assert AuditLogger.verify_integrity() is True
-        print('Security & Zero-PHI Audit Passed!')
-        "
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install declared dependencies
+        run: python -m pip install ".[web,dev]"
+      - name: Python tests
+        run: python -m pytest -q
+      - name: Compile Python source
+        run: python -m compileall -q agents qrng_entropy cli.py enrichment.py simulator.py
+      - name: Browser extractor tests
+        run: node --test tests/web.test.cjs
+      - name: CLI extraction smoke test
+        run: |
+          printf '0110001101' > /tmp/qrng-input.txt
+          python -m qrng_entropy.cli extract -i /tmp/qrng-input.txt -o /tmp/qrng-output.txt
+          grep -qx '010' /tmp/qrng-output.txt
+          python cli.py extract -i /tmp/qrng-input.txt -o /tmp/qrng-output.txt
+          grep -qx '010' /tmp/qrng-output.txt
+      - name: Audit trail integrity smoke test
+        run: python -c "from agents.base import AuditLogger; assert AuditLogger.verify_integrity()"
