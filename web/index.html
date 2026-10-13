@@ -81,7 +81,9 @@ document.addEventListener("DOMContentLoaded", () => {
     reset();
     if(!globalThis.crypto || !crypto.getRandomValues){show("Web Crypto is not available in this context.",true);return;}
     const arr=new Uint32Array(2048);crypto.getRandomValues(arr);
-    const p=Number(el("bias").value)/100;
+    const percent=Number(el("bias").value);
+    if(!el("bias").value.trim() || !Number.isFinite(percent) || percent<0 || percent>100){show("Enter a simulation probability between 0 and 100%.",true);return;}
+    const p=percent/100;
     el("bits").value=Array.from(arr,x=> x/4294967296<p?"1":"0").join("");
     show("Generated 2,048 synthetic Bernoulli observations (nominal P(1)="+p.toFixed(2)+"). Not quantum measurements.");
   });
