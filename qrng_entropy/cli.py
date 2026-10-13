@@ -77,7 +77,7 @@ def main(argv=None):
         dossier = coordinator.process(payload)
         print("=" * 80)
         print(f"  QRNG-ENTROPY: NIST SP 800-90B PHYSICAL ENTROPY SOURCE & MIN-ENTROPY ESTIMATOR")
-        print(f"  Domain: Post-Quantum Cryptography & Zero-Knowledge | Standard: NIST SP 800-90B / 90C Entropy Assessment")
+        print(f"  Method: Illustrative metric thresholds (not NIST entropy-source testing)")
         print(f"  Task: {dossier['task_id']} | Status: [{dossier['overall_status']}] | Total Alerts: {dossier['total_alerts']}")
         print("=" * 80)
         for a in dossier["alerts"]:
