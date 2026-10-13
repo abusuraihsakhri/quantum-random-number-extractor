@@ -5,7 +5,7 @@ import argparse
 import csv
 import json
 import sys
-from .models import FrontierPayload
+from .extractor import extract_bits, MAX_BITS\nfrom .models import FrontierPayload
 from .agents import QRNGEntropyCoordinator
 
 coordinator = QRNGEntropyCoordinator()
@@ -38,7 +38,32 @@ def main(argv=None):
     p_serve.add_argument("--host", default="127.0.0.1")
     p_serve.add_argument("--port", type=int, default=8000)
 
+    p_extract = subparsers.add_parser("extract", help="Debias a 0/1 text bitstream using Von Neumann pairs")
+    p_extract.add_argument("-i", "--input", required=True, help="Text file of 0/1 observations")
+    p_extract.add_argument("-o", "--output", help="Write extracted text bits (default: stdout)")
+
     args = parser.parse_args(argv)
+
+    if args.command == "extract":
+        try:
+            source = Path(args.input)
+            if source.stat().st_size > MAX_BITS * 4:
+                raise ValueError("Input file exceeds the supported 4 MB limit")
+            result = extract_bits(source.read_text(encoding="utf-8-sig"))
+            if args.output:
+                Path(args.output).write_text(result["output_bits"] + "\\n", encoding="utf-8")
+            else:
+                print(result["output_bits"])
+            print(
+                f"Extracted {result['output']['length']} bits from {result['input']['length']} input bits; "
+                f"{result['pairs_discarded']} pairs discarded.",
+                file=sys.stderr,
+            )
+            return 0
+        except (OSError, UnicodeError, ValueError) as exc:
+            print(f"Extraction error: {exc}", file=sys.stderr)
+            return 1
+
 
     if args.command == "audit":
         payload = FrontierPayload(
